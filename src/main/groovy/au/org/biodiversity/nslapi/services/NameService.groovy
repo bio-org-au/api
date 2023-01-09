@@ -12,4 +12,11 @@ interface NameService {
      * @return HttpResponse
      */
     HttpResponse checkAndProcess(String searchText, String dataset)
+
+    /**
+     * Perform an atomised search using the GNParser
+     * @param String s
+     * @return Map
+     */
+    Map performAtomisedMatch(String s)
 }

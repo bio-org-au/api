@@ -1,7 +1,10 @@
 package au.org.biodiversity.nslapi
 
-import au.org.biodiversity.nslapi.services.GraphCallService
+import au.org.biodiversity.nslapi.services.ApiAccessService
 import au.org.biodiversity.nslapi.services.NameService
+
+//import au.org.biodiversity.nslapi.services.GraphCallService
+
 import groovy.util.logging.Slf4j
 import io.micronaut.core.annotation.Nullable
 import io.micronaut.http.HttpResponse
@@ -19,8 +22,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.inject.Inject
 
-import java.util.regex.Pattern
-
 /*
     This class is for the NSL name api endpoint.
     It contains routes for the name check. search, etc
@@ -30,7 +31,7 @@ import java.util.regex.Pattern
 @Controller('/name')
 class NameController {
     @Inject
-    GraphCallService graphCallService
+    ApiAccessService apiAccessService
 
     @Inject
     NameService nameService

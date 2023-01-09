@@ -14,7 +14,7 @@ import spock.lang.Specification
 @MicronautTest
 class GraphCallServiceImplSpec extends Specification {
     @Inject
-    GraphCallService graphCallService
+    ApiAccessService apiAccessService
 
     @Inject
     @Client("/")
@@ -28,7 +28,7 @@ class GraphCallServiceImplSpec extends Specification {
 
     def "buildQuery - Working #searchName - #hasSearchName"() {
         when:
-        String query = graphCallService.buildQuery(searchName, '')
+        String query = apiAccessService.buildQuery(searchName, '')
 
         then:
         hasSearchName == query.contains(searchName)
@@ -44,7 +44,7 @@ class GraphCallServiceImplSpec extends Specification {
     def "buildQuery - #name #length"() {
 
         when:
-        String query = graphCallService.buildQuery(name, 'APNI')
+        String query = apiAccessService.buildQuery(name, 'APNI')
 
         then:
         length == query.size()
@@ -59,7 +59,7 @@ class GraphCallServiceImplSpec extends Specification {
 
     def "buildRequest - Not Found"() {
         when:
-        HttpRequest request = graphCallService.buildRequest('get', 'acacia', '')
+        HttpRequest request = apiAccessService.buildRequest('get', 'acacia', '')
         httpClient.toBlocking().exchange(request, Map)
 
         then:
@@ -68,7 +68,7 @@ class GraphCallServiceImplSpec extends Specification {
 
     def "buildRequest - #type #name #rb #rm Found"() {
         when:
-        HttpRequest request = graphCallService.buildRequest(type, name, 'APNI')
+        HttpRequest request = apiAccessService.buildRequest(type, name, 'APNI')
 
         then:
         request.body.toString().contains(rb)
@@ -83,7 +83,7 @@ class GraphCallServiceImplSpec extends Specification {
 
     def "buildRequest - #type #name throws exception"() {
         when:
-        HttpRequest request = graphCallService.buildRequest(type, name, '')
+        HttpRequest request = apiAccessService.buildRequest(type, name, '')
 
         then:
         thrown(InvalidRequestTypeException)

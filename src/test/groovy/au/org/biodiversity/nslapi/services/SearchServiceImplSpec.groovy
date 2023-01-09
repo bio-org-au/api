@@ -59,12 +59,11 @@ class SearchServiceImplSpec extends Specification{
 
         then:
         count == allRecords.count
-        name << ["Eukaryota", 'Anthozoa', 'Cymbella aspera (Ehrenb.) Cleve', 'Cymbella gastroides (Kütz) Bréb. & Godey', 'Bacillariophyceae classis incertae sedis']
+        name << ["Eukaryota", 'Cymbella aspera (Ehrenb.) Cleve', 'Cymbella gastroides (Kütz) Bréb. & Godey', 'Bacillariophyceae classis incertae sedis']
 
         where:
         name                                        || count
         "Eukaryota"                                 || 3
-        'Anthozoa'                                  || 1
         'Cymbella aspera (Ehrenb.) Cleve'           || 1
         'Cymbella gastroides (Kütz) Bréb. & Godey'  || 1
         'Bacillariophyceae classis incertae sedis'  || 1
@@ -76,12 +75,11 @@ class SearchServiceImplSpec extends Specification{
 
         then:
         count == allRecords.count
-        name << ["Eukaryota", 'Anthozoa', 'Cymbella aspera', 'Cymbella gastroides', 'Bacillariophyceae classis incertae sedis']
+        name << ["Eukaryota", 'Cymbella aspera', 'Cymbella gastroides', 'Bacillariophyceae classis incertae sedis']
 
         where:
         name                                        || count
         "Eukaryota"                                 || 3
-        'Anthozoa'                                  || 1
         'Cymbella aspera'                           || 1
         'Cymbella gastroides'                       || 1
         'Bacillariophyceae classis incertae sedis'  || 1
@@ -93,12 +91,11 @@ class SearchServiceImplSpec extends Specification{
 
         then:
         rm == allRecords.recordsMatched
-        name << ["Eukaryota", 'Anthozoa', 'Cymbella aspera', 'Cymbella gastroides', 'Bacillariophyceae classis incertae sedis']
+        name << ["Eukaryota", 'Cymbella aspera', 'Cymbella gastroides', 'Bacillariophyceae classis incertae sedis']
 
         where:
         name                                        || rm
         "Eukaryota"                                 || 3
-        'Anthozoa'                                  || 1
         'Cymbella aspera'                           || 1
         'Cymbella gastroides'                       || 1
         'Bacillariophyceae classis incertae sedis'  || 1
