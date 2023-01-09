@@ -1,0 +1,15 @@
+micronaut:
+  application:
+    name: nslapi
+  server:
+    port: 7171
+
+datasources:
+  default:
+    url: ${nslapi.db.url:`jdbc:postgresql://localhost:5432/nslapi`}
+    username: ${nslapi.db.username:hasura}
+    password: ${nslapi.db.password:hasura}
+    driverClassName: org.postgresql.Driver
+    autoCommit: false
+    schema: ${nslapi.db.schema:api}
+    socketTimeout: 30

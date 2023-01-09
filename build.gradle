@@ -1,0 +1,98 @@
+plugins {
+    id("groovy") 
+    id("com.github.johnrengelman.shadow") version "7.1.0"
+    id("io.micronaut.application") version "2.0.8"
+    id("org.asciidoctor.jvm.convert") version "3.3.2"
+    id("application")
+    id("war")
+}
+
+version = "0.1"
+group = "au.org.biodiversity.nslapi"
+
+ext {
+    micronautVersion = "3.1.4"
+}
+
+apply from: "gradle/asciidoc.gradle"
+repositories {
+    mavenCentral()
+}
+
+micronaut {
+    runtime("netty")
+    testRuntime("spock2")
+    processing {
+        incremental(true)
+        annotations("au.org.biodiversity.nslapi.*")
+    }
+}
+
+dependencies {
+    // Micronaut
+    annotationProcessor platform("io.micronaut:micronaut-bom:$micronautVersion")
+    annotationProcessor("io.micronaut:micronaut-inject-java")
+    compileOnly("io.micronaut:micronaut-inject-groovy")
+    implementation("io.micronaut:micronaut-validation")
+    implementation("io.micronaut.groovy:micronaut-runtime-groovy")
+    implementation("javax.annotation:javax.annotation-api")
+    // Groovy
+    implementation('org.codehaus.groovy:groovy-all:3.0.9')
+    compileOnly("io.micronaut:micronaut-inject-groovy")
+    implementation("io.micronaut.groovy:micronaut-runtime-groovy")
+    compileOnly platform("io.micronaut:micronaut-bom:$micronautVersion")
+    // Data
+    compileOnly('org.codehaus.groovy:groovy-sql:3.0.9')
+    implementation("io.micronaut.sql:micronaut-jdbc-tomcat")
+    runtimeOnly("org.postgresql:postgresql:42.2.13")
+    // http
+    implementation("io.micronaut:micronaut-http-client")
+    compileOnly("io.micronaut:micronaut-http-validation")
+    // Logging
+    runtimeOnly("ch.qos.logback:logback-classic")
+
+}
+
+application {
+    mainClass.set("au.org.biodiversity.nslapi.Application")
+}
+
+// Load external config files
+run.classpath += configurations.developmentOnly
+run.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1', '-Dcom.sun.management.jmxremote',
+        "-Dmicronaut.config.files=${System.getenv('NSL_API_CONFIG_PATH')}")
+test.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1', '-Dcom.sun.management.jmxremote',
+        "-Dmicronaut.config.files=./src/test/resource/nsl-api-config.groovy")
+
+// Hot-Reloading
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+    options.compilerArgs.addAll([
+        '-parameters',
+        // enables incremental compilation
+        '-Amicronaut.processing.incremental=true',
+        '-Amicronaut.processing.annotations=au.org.biodiversity.nslapi.*',
+        "-Amicronaut.processing.group=$project.group",
+        "-Amicronaut.processing.module=$project.name",
+    ])
+}
+
+tasks.withType(JavaExec) {
+    classpath += configurations.developmentOnly
+    jvmArgs('-XX:TieredStopAtLevel=1', '-Dcom.sun.management.jmxremote')
+    if (gradle.startParameter.continuous) {
+        systemProperties(
+            'micronaut.io.watch.restart':'true',
+            'micronaut.io.watch.enabled':'true',
+            "micronaut.io.watch.paths":"src/main"
+        )
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("11")
+    targetCompatibility = JavaVersion.toVersion("11")
+}
+
+
+
