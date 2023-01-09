@@ -1,12 +1,16 @@
 nslapi {
     db {
-        username = System.getenv('NSL_API_DB_USER')
-        password = System.getenv('NSL_API_DB_PWD')
-        url = "jdbc:${System.getenv('NSL_API_DB_URL')}"
-        schema = System.getenv('NSL_API_DB_SCHEMA')
+        username = "hasura"
+        password = "hasura"
+        url = "jdbc:postgresql://localhost:5432/api-test"
+        schema = "api"
     }
     search {
         exactLimit = 5
         partialLimit = 50
+    }
+    graphql {
+	    url = "http://localhost:8080/v1/graphql"
+        adminSecret: "admin"
     }
 }

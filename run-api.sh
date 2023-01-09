@@ -5,6 +5,7 @@ do
   echo "Killing ps $item"
   kill -9 $item;
 done
+export MICRONAUT_ENVIRONMENTS=dev
 export NSLAPICONFIGPATH=/home/mo/.nsl/nsl-api-config.groovy
 export NSLAPIDBUSER=hasura
 export NSLAPIDBPWD=hasura

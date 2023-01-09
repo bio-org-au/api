@@ -60,7 +60,7 @@ class SearchServiceImpl implements SearchService {
     Map getExactMatch(String searchString) {
         String sql = readerService.buildSql(searchString)
         List allRecords = readerService.getRows(sql)
-        [ "count": allRecords.size(), "results": allRecords ]
+        [ "count": allRecords?.size(), "results": allRecords ]
     }
 
     /**
@@ -73,7 +73,7 @@ class SearchServiceImpl implements SearchService {
     Map getPartialMatches(String searchString) {
         String sql = readerService.buildSql(searchString, "canonicalName", 50)
         List allRecords = readerService.getRows(sql)
-        [ "count": allRecords.size(), "results": allRecords ]
+        [ "count": allRecords?.size(), "results": allRecords ]
     }
 
     @Override
@@ -82,12 +82,13 @@ class SearchServiceImpl implements SearchService {
         if (requestBody?.names?.getClass() == ArrayList) {
             List response = []
             def namesSent = 0
-            def namesProcessed = 10
+            def namesProcessed = 0
             try {
                 // Get names and search for each one of them
                 // Append the response as required
                 List namesList = requestBody.names as List
-                namesSent = namesList.size()
+                namesSent = namesList?.size()
+                namesProcessed = (namesSent < 10) ? namesSent : 10
                 def newnamesList = namesList.take(namesProcessed)
                 newnamesList.each { name ->
                     Map nameSearch = search(name as String)

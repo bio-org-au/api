@@ -16,17 +16,15 @@
 package au.org.biodiversity.nslapi.services
 
 import au.org.biodiversity.nslapi.ApiTaxonView
-import groovy.sql.GroovyResultSet
-import groovy.sql.ResultSetMetaDataWrapper
-import groovy.sql.Sql
 import groovy.sql.GroovyRowResult
+import groovy.sql.Sql
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import javax.sql.DataSource
 
+import javax.sql.DataSource
 /*
     Implementation of the ReaderService
 * */
@@ -73,7 +71,6 @@ class ReaderServiceImpl implements  ReaderService {
                 for (i in 1..md.getColumnCount()) {
                     rowMap.put(md.getColumnLabel(i), row[i-1])
                 }
-                log.debug "rowMap: ${rowMap.created} ${rowMap.modified}"
                 rows.add(rowMap)
             }
             return rows
@@ -95,7 +92,7 @@ class ReaderServiceImpl implements  ReaderService {
     }
 
     /**
-     * Build SQL query with and without wild card to get data from the api_taxon_view
+     * Build SQL query with and without wild card to get data from the taxa
      * @param String searchString,
      *        String column to match,
      *        Boolean rightWildCrd
@@ -103,6 +100,6 @@ class ReaderServiceImpl implements  ReaderService {
      */
     @SuppressWarnings("GrMethodMayBeStatic")
     public String buildSql(String value, String column = "scientificName", Integer limit = 5) {
-            return "SELECT * FROM api.api_taxon_view WHERE \"$column\" ILIKE \'$value\' LIMIT $limit;"
+            return "SELECT * FROM api.taxa WHERE \"$column\" ILIKE \'$value\';"
     }
 }

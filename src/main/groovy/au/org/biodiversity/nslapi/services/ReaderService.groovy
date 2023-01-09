@@ -40,7 +40,7 @@ interface ReaderService {
     List<ApiTaxonView> getRows(String sql)
 
     /**
-     * Build SQL query with and without wild card to get data from the api_taxon_view
+     * Build SQL query with and without wild card to get data from the taxa
      * Three functions to cover optional params
      * @param String searchString,
      *        String column to match,

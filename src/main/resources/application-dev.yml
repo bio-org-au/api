@@ -21,18 +21,18 @@ micronaut:
 
 datasources:
   default:
-    url: ${nslapi.db.url:`jdbc:postgresql://localhost:5432/nslapi`}
-    username: ${nslapi.db.username:hasura}
-    password: ${nslapi.db.password:hasura}
+    url: jdbc:postgresql://localhost:5432/nslapi
+    username: hasura
+    password: hasura
     driverClassName: org.postgresql.Driver
     autoCommit: false
-    schema: ${nslapi.db.schema:api}
+    schema: api
     socketTimeout: 30
 ---
 nslapi:
   search:
-    eLimit: ${nslapi.search.exactLimit:10}
-    pLimit: ${nslapi.search.partialLimit:50}
+    eLimit: 8
+    pLimit: 45
   graphql:
     url: http://localhost:8080/v1/graphql
     adminSecret: admin

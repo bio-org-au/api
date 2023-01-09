@@ -8,11 +8,14 @@ import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.*
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.ExampleObject
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.inject.Inject
-
 import javax.annotation.security.PermitAll
 
 /*
@@ -28,14 +31,16 @@ class IndexController {
     Integer eLimit
 
     @Operation(summary = "Searches a name string provided as 'q' query param",
-            description = "Passing a search string as 'q=Some%20Name' searches it through the NSL dataset")
+            description = "Passing a search string as 'q=Acacia Mill.' searches it in the NSL dataset and returns a json response")
     @ApiResponse(responseCode = "200", description = "matchType explains whether matched name is exact or partial; No match if name doesnot exist",
             content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "When 'q' uri parameter is not specified")
-    @Tag(name = "search")
+    @Schema(description = "Provide a name to search", defaultValue = "Acacia dealbata")
+    @Tag(name = "check")
     @Get("/check-name")
     @Produces(MediaType.APPLICATION_JSON)
-    HttpResponse checkName(@QueryValue("q") String searchString) {
+    HttpResponse checkName(@Parameter(name = "q", required = true, example = "Acacia dealbata")
+                           @QueryValue("q") String searchString) {
         log.debug("search with searchString: '${searchString}'")
         HttpResponse.<Map> ok(searchService.search(searchString))
     }
@@ -45,9 +50,20 @@ class IndexController {
     @ApiResponse(responseCode = "200", description = "When valid json is provided. Response contains the attributes for each of the names in the list provided",
             content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "If a list isn't provided or invalid json is sent")
-    @Tag(name = "search")
+    @Tag(name = "check")
+    @RequestBody(
+        description = "Provide a urlEncoded list of names to search the NSL dataset",
+        required = true,
+        content = @Content(
+            schema = @Schema(implementation = Map.class),
+            mediaType = MediaType.APPLICATION_JSON,
+            examples = @ExampleObject(
+                value = '{"names": ["Neobisnius mediopolitus Lea, 1929", "Acacia leucolobia Sweet" ]}'
+            )
+        )
+    )
     @SuppressWarnings('GrMethodMayBeStatic')
-    @Post("/bulk-search")
+    @Post("/check-name-bulk")
     @Produces(MediaType.APPLICATION_JSON)
     HttpResponse bulkSearch(@Body Map body) {
         searchService.bulkSearch(body)

@@ -3,6 +3,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.0"
     id("io.micronaut.application") version "2.0.8"
     id("org.asciidoctor.jvm.convert") version "3.3.2"
+    id('jacoco')
 }
 
 version "0.1"
@@ -100,5 +101,27 @@ java {
     targetCompatibility = JavaVersion.toVersion("11")
 }
 
+task setupTestDb(type: Exec) {
+    workingDir "$projectDir/src/test/resources"
+    commandLine './setup_test_db.sh'
+}
 
+test {
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+}
 
+tasks.withType(Test) {
+    dependsOn(setupTestDb)
+}
+
+test.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1', '-Dcom.sun.management.jmxremote',
+        "-Dmicronaut.config.files=./src/test/resources/nsl-api-config.groovy",
+        "-Dmicronaut.environments=test")
