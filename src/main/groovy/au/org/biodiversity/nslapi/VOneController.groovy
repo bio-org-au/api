@@ -13,27 +13,31 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
+
 package au.org.biodiversity.nslapi
 
-import io.micronaut.runtime.Micronaut
-import groovy.transform.CompileStatic
-import io.swagger.v3.oas.annotations.OpenAPIDefinition
-import io.swagger.v3.oas.annotations.info.Contact
-import io.swagger.v3.oas.annotations.info.Info
-import io.swagger.v3.oas.annotations.info.License
+import au.org.biodiversity.nslapi.services.ReaderService
+import groovy.util.logging.Slf4j
+import io.micronaut.http.MediaType
+import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.Produces
+import jakarta.inject.Inject
 
-@OpenAPIDefinition(
-    info = @Info(
-            title = "National Secies List API v1",
-            version = "1.0",
-            description = "NSL API",
-            license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0")
-    )
-)
+/*
+    This class is for the v1 NSL api endpoint.
+    It contains routes for the v1 endpoint
+* */
+@Slf4j
+@Controller("/v1")
+class VOneController {
+    @Inject
+    ReaderService readerService
 
-@CompileStatic
-class Application {
-    static void main(String[] args) {
-        Micronaut.run(Application, args)
+    @Get("/check_name")
+    @Produces(MediaType.APPLICATION_JSON)
+    Map checkName() {
+        List allRecords = readerService.getRows()
+        [ "count": allRecords.size(), "results": allRecords ]
     }
 }

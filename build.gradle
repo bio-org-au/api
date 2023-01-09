@@ -50,11 +50,19 @@ dependencies {
     compileOnly("io.micronaut:micronaut-http-validation")
     // Logging
     runtimeOnly("ch.qos.logback:logback-classic")
+    // swagger
+    annotationProcessor("io.micronaut.openapi:micronaut-openapi:3.2.0")
+    implementation("io.swagger.core.v3:swagger-annotations")
 
 }
 
 application {
     mainClass.set("au.org.biodiversity.nslapi.Application")
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.forkOptions.jvmArgs.add('-Dgroovy.parameters=true')
+    groovyOptions.forkOptions.jvmArgs.add('-Dmicronaut.openapi.views.spec=rapidoc.enabled=true,swagger-ui.enabled=true,swagger-ui.theme=flattop')
 }
 
 // Load external config files
@@ -71,7 +79,7 @@ tasks.withType(JavaCompile) {
         '-parameters',
         // enables incremental compilation
         '-Amicronaut.processing.incremental=true',
-        '-Amicronaut.processing.annotations=au.org.biodiversity.nslapi.*',
+        '-Amicronaut.processing.annotations=au.org.biodiversity.*',
         "-Amicronaut.processing.group=$project.group",
         "-Amicronaut.processing.module=$project.name",
     ])

@@ -2,6 +2,7 @@ package au.org.biodiversity.nslapi
 
 import groovy.util.logging.Slf4j
 import io.micronaut.context.annotation.Property
+import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -14,26 +15,30 @@ import javax.sql.DataSource
 @Slf4j
 @Controller("/")
 class IndexController {
+    /* Default endpoint; displays html text to documentation
+    * */
+    @PermitAll
+    @Produces(MediaType.TEXT_HTML)
+    @Get("/")
+    HttpResponse index() {
+        HttpResponse.ok(
+                """
+                        NSL API Version 1.0. 
+                        Refer to our documentation at <a href="/docs">here</a>
+                        """
+        )
+    }
 
-
-
-//    @Property(name = "micronaut.config.files")
-//    String configFiles
-
-//    @Property(name = "nslapi.db.url")
-//    String dbUrl
-
-    /*
-    Health check endpoint
-    @return Map
+    /* Health check endpoint
     @param none
     * */
     @PermitAll
     @Produces(MediaType.APPLICATION_JSON)
-    @Get("/")
-    Map index() {
-        // configFiles: ${configFiles}
-        log.debug " :: dbUrl: $dbUrl"
-        ["health": "ok"]
+    @Get("/health")
+    Map health() {
+        [
+            "health": "OK",
+            "status": "UP"
+        ]
     }
 }
