@@ -1,5 +1,6 @@
 package au.org.biodiversity.nslapi.services
 
+
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -16,7 +17,7 @@ class NameServiceImpl implements NameService {
     private HttpClient httpClient
 
     @Inject
-    GraphCallService graphCallService
+    ApiAccessService apiAccessService
 
     /**
      * Check and process name from a search string;
@@ -27,28 +28,67 @@ class NameServiceImpl implements NameService {
      */
     HttpResponse checkAndProcess(String searchText, String datasetID) {
         // Build request and get a response
-        HttpRequest request = graphCallService.buildRequest('post', searchText, datasetID)
+        HttpRequest request = apiAccessService.buildRequest('post', searchText, datasetID, true)
         HttpResponse<Map> response = httpClient.toBlocking().exchange(request, Map)
         Map responseBodyAsMap = response.body() as Map
 
         // dataset passed or not
         String datasetSearched = (datasetID == '%') ? 'all' : datasetID
         // Empty response
-        if (responseBodyAsMap?.data?.api_names == []) {
+        if (responseBodyAsMap?.get("data")?.get("api_names") == []) {
             log.debug("unMatchString: ${searchText}")
-            HttpResponse.<Map> ok(
-                    ["noOfResults": 0,
-                     "verbatimSearchString": searchText,
-                     "processedSearchString": searchText,
-                     "datasetSearched": datasetSearched,
-                     "resultNameMatchType": "No match"]
-            )
+            Map atomisedMatchResult = performAtomisedMatch(searchText)
+            if (atomisedMatchResult?.get("parsed")) {
+                String newSearchText = atomisedMatchResult.get("normalized")
+                log.debug("newsearchtext: $newSearchText")
+                HttpRequest newRequest = apiAccessService.buildRequest('post', searchText, datasetID, true)
+                HttpResponse<Map> newResponse = httpClient.toBlocking().exchange(newRequest, Map)
+                Map newResponseBodyAsMap = newResponse.body()
+                List finalAllRecords = newResponseBodyAsMap?.get("data")?.get("api_names")
+                if (!finalAllRecords) {
+                    HttpResponse.<Map> ok(
+                            ["noOfResults": 0,
+                             "verbatimSearchString": searchText,
+                             "processedSearchString": newSearchText,
+                             "datasetSearched": datasetSearched,
+                             "resultNameMatchType": "No match",
+                             "GNParserMatched": atomisedMatchResult?.get("parsed"),
+                             "GNParserVersion": atomisedMatchResult?.get("parserVersion")
+                            ]
+                    )
+                }
+                finalAllRecords.each { record ->
+                    record['resultNameMatchType'] = (record?.get("scientificName")?.equalsIgnoreCase(searchText)) ? "Exact" : "Partial"
+                }
+                HttpResponse.<Map> ok(
+                        ["noOfResults": finalAllRecords.size(),
+                         "verbatimSearchString": searchText,
+                         "processedSearchString": newSearchText,
+                         "datasetSearched": datasetSearched,
+                         "GNParserMatched": atomisedMatchResult?.get("parsed"),
+                         "GNParserVersion": atomisedMatchResult?.get("parserVersion"),
+                         "results": finalAllRecords
+                        ]
+                )
+            } else {
+                HttpResponse.<Map> ok(
+                        ["noOfResults": 0,
+                         "verbatimSearchString": searchText,
+                         "processedSearchString": searchText,
+                         "datasetSearched": datasetSearched,
+                         "resultNameMatchType": "No match",
+                         "GNParserMatched": atomisedMatchResult?.get("parsed"),
+                         "GNParserVersion": atomisedMatchResult?.get("parserVersion")
+                        ]
+                )
+            }
+
         } else {
             // Add match type to each name
-            List allRecords = responseBodyAsMap?.data?.api_names
+            List allRecords = responseBodyAsMap?.get("data")?.get("api_names")
             // Add matchType to each record found
             allRecords.each { record ->
-                record['resultNameMatchType'] = (record?.scientificName?.equalsIgnoreCase(searchText)) ? "Exact" : "Partial"
+                record['resultNameMatchType'] = (record?.get("scientificName")?.equalsIgnoreCase(searchText)) ? "Exact" : "Partial"
             }
             // Return all records with the response
             log.debug("matchedString: ${searchText}")
@@ -62,5 +102,17 @@ class NameServiceImpl implements NameService {
                     ]
             )
         }
+    }
+
+    /**
+     * Perform an atomised search using the GNParser
+     * @param String s
+     * @return Map
+     */
+    Map performAtomisedMatch(String s) {
+        HttpRequest gnpRequest = apiAccessService.buildRequest('get', s, '', false)
+        HttpResponse<Map> gnpResponse = httpClient.toBlocking().exchange(gnpRequest, Map)
+        log.debug(gnpResponse.body().toString())
+        gnpResponse.body()
     }
 }

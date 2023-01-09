@@ -18,6 +18,10 @@ micronaut:
       swagger-ui:
         paths: classpath:META-INF/swagger/views/swagger-ui
         mapping: /try/**
+endpoints:
+  info:
+    enabled: true
+    sensitive: false
 
 datasources:
   default:
@@ -36,3 +40,5 @@ nslapi:
   graphql:
     url: http://localhost:8080/v1/graphql
     adminSecret: admin
+  gnparser:
+    apiUrl: https://parser.globalnames.org/api/v1/

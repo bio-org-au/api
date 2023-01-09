@@ -11,6 +11,6 @@ nslapi {
     }
     graphql {
 	    url = "http://localhost:8080/v1/graphql"
-        adminSecret: "admin"
+        adminSecret = "admin"
     }
 }

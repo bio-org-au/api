@@ -36,3 +36,5 @@ nslapi:
   graphql:
     url: ${nslapi.graphql.url:`http://localhost:8080/v1/graphql`}
     adminSecret: ${nslapi.graphql.adminSecret:admin}
+  gnparser:
+    apiUrl: https://parser.globalnames.org/api/v1/
