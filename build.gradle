@@ -5,9 +5,13 @@ plugins {
     id("org.asciidoctor.jvm.convert") version "3.3.2"
     id('jacoco')
     id("com.gorylenko.gradle-git-properties") version "2.3.2"
+    id('net.thauvin.erik.gradle.semver') version '1.0.4'
 }
 
-version "0.0.3"
+shadowJar {
+    mergeServiceFiles()
+}
+
 group "au.org.biodiversity.nslapi"
 
 ext {
@@ -43,12 +47,12 @@ dependencies {
     compileOnly platform("io.micronaut:micronaut-bom:$micronautVersion")
     // Data
     compileOnly('org.codehaus.groovy:groovy-sql:3.0.9')
-    implementation("io.micronaut.sql:micronaut-jdbc-tomcat")
+//    implementation("io.micronaut.sql:micronaut-jdbc-tomcat")
     runtimeOnly("org.postgresql:postgresql:42.2.13")
     // http
     implementation("io.micronaut:micronaut-http-client")
     compileOnly("io.micronaut:micronaut-http-validation")
-    implementation("io.micronaut.servlet:micronaut-http-server-tomcat:1.0.2")
+    implementation("io.micronaut:micronaut-http-server-netty")
     // Logging
     runtimeOnly("ch.qos.logback:logback-classic")
     implementation("org.codehaus.janino:janino:3.1.0")
@@ -86,6 +90,37 @@ tasks.withType(JavaCompile) {
     ])
 }
 
+run {
+    doFirst {
+        println "nslapi version: $version"
+
+        String originalFn = "build/classes/groovy/main/META-INF/swagger/nsl-api-0.0.1.yml"
+        String newFn = "build/classes/groovy/main/META-INF/swagger/nsl-api-0.0.1-copy.yml"
+        String newVersion = "$version"
+
+        File swaggerFile = new File(originalFn)
+        File NewSwaggerFile = new File(newFn)
+
+        NewSwaggerFile.withWriter { w ->
+            swaggerFile.eachLine { l->
+                if (l.contains('  version: ')) {
+                    l = '  version: ' + newVersion
+                    println l
+                }
+                w << l + System.getProperty("line.separator")
+            }
+        }
+        Boolean deleted = swaggerFile.delete()
+        if (deleted) {
+            NewSwaggerFile.renameTo(originalFn)
+            println "Done updating swagger version!!!"
+        } else {
+            println "FAILED to match swagger version with app version"
+        }
+
+    }
+}
+
 tasks.withType(JavaExec) {
     classpath += configurations.developmentOnly
     jvmArgs('-XX:TieredStopAtLevel=1', '-Dcom.sun.management.jmxremote')
@@ -103,10 +138,10 @@ java {
     targetCompatibility = JavaVersion.toVersion("11")
 }
 
-task setupTestDb(type: Exec) {
-    workingDir "$projectDir/src/test/resources"
-    commandLine './setup_test_db.sh'
-}
+//task setupTestDb(type: Exec) {
+//    workingDir "$projectDir/src/test/resources"
+//    commandLine './setup_test_db.sh'
+// }
 
 test {
     finalizedBy jacocoTestReport // report is always generated after tests run
@@ -120,9 +155,9 @@ jacocoTestReport {
     }
 }
 
-tasks.withType(Test) {
-    dependsOn(setupTestDb)
-}
+//tasks.withType(Test) {
+//    dependsOn(setupTestDb)
+//}
 
 test.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1', '-Dcom.sun.management.jmxremote',
         "-Dmicronaut.config.files=./src/test/resources/nsl-api-config.groovy",

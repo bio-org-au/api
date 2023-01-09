@@ -4,6 +4,13 @@ micronaut:
   server:
     port: 8095
     host: localhost
+    netty:
+      worker:
+        threads: 75
+      parent:
+        threads: 75
+      childOptions:
+        autoRead: true
   router:
     static-resources:
       main:

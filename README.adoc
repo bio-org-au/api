@@ -70,7 +70,10 @@ The provenance of data is displayed in each response using the repository url. S
         "some_key": "its_attribute"
     },
     "provenance": {
-        "wasAttributedTo": "http://github.com/bio-org-au/nslapi/releases/tag/1.0.0
+        "wasAttributedTo": "http://github.com/bio-org-au/nslapi/releases/tag/1.0.0,,
+        "appliedProcesses": [
+          "gnparser v1.6.0"
+    ]
 }
 }
 ----

@@ -36,4 +36,13 @@ interface ApiAccessService {
      * @return String
      */
     String generateGraphQuery(String name, String dataset)
+
+    /**
+     * Create a HttpRequest when a GraphQL query string is supplied
+     * as a property
+     *
+     * @param query
+     * @return HttpRequest
+     */
+    HttpRequest buildRequest()
 }

@@ -30,7 +30,7 @@ class GetReleaseJob {
     void execute() {
         HttpRequest httpRequest = HttpRequest.GET("/info")
         HttpResponse<Map> httpResponse = httpClient.toBlocking().exchange(httpRequest, Map)
-        String tag = httpResponse?.body()?.git?.tags
+        String tag = "v${ httpResponse?.body()?.git?.build?.version }"
         provenanceUrl = (tag ) ? baseUrl + tag : ''
         log.debug(provenanceUrl)
     }

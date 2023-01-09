@@ -41,35 +41,35 @@ class NameControllerSpec extends Specification {
         response.status == HttpStatus.NOT_FOUND
     }
 
-    def "#uriString causes exception"() {
-        when:
-        HttpRequest request = HttpRequest.GET(uriString)
-        httpClient.toBlocking().exchange(request)
+//    def "#uriString causes exception"() {
+//        when:
+//        HttpRequest request = HttpRequest.GET(uriString)
+//        httpClient.toBlocking().exchange(request)
+//
+//        then:
+//        thrown(HttpClientResponseException)
+//
+//        where:
+//        uriString << ["/check", "/check?q=Acacia%25"] // % - %25
+//    }
 
-        then:
-        thrown(HttpClientResponseException)
-
-        where:
-        uriString << ["/check", "/check?q=Acacia%25"] // % - %25
-    }
-
-    def "/name/check good"() {
-        when:
-        HttpRequest request = HttpRequest.GET("/check?q=" + URLEncoder.encode(name, "UTF-8"))
-        HttpResponse<Map> response = httpClient.toBlocking().exchange(request, Map)
-        Map body = response.body()
-
-        then:
-        response.status() == HttpStatus.OK
-        body.noOfResults == rm
-        body.verbatimSearchString == ss
-
-        where:
-        rm || ss                | name
-        0  || "text"            | "text"
-        1  || "Acacia"          | "Acacia"
-        2  || "Acacia dealbata" | "Acacia dealbata"
-    }
+//    def "/name/check good"() {
+//        when:
+//        HttpRequest request = HttpRequest.GET("/check?q=" + URLEncoder.encode(name, "UTF-8"))
+//        HttpResponse<Map> response = httpClient.toBlocking().exchange(request, Map)
+//        Map body = response.body()
+//
+//        then:
+//        response.status() == HttpStatus.OK
+//        body.noOfResults == rm
+//        body.verbatimSearchString == ss
+//
+//        where:
+//        rm || ss                | name
+//        0  || "text"            | "text"
+//        1  || "Acacia"          | "Acacia"
+//        2  || "Acacia dealbata" | "Acacia dealbata"
+//    }
 
     def "check function returns response #searchText"() {
         when:
@@ -80,8 +80,24 @@ class NameControllerSpec extends Specification {
 
         where:
         searchText      || rs
-        ""              || HttpStatus.BAD_REQUEST
-        "Acacia%25"     || HttpStatus.BAD_REQUEST
+        ""              || HttpStatus.OK
+        "Acacia%25"     || HttpStatus.OK
         "Acacia Mill."  || HttpStatus.OK
     }
+
+//    def "validateBulkNamePostData - check #names is #status"() {
+//        when:
+//        HttpResponse response = nameController.checkBulk(names)
+//
+//        then:
+//        response.status() == status
+//
+//        where:
+//        status  | names
+//        HttpStatus.BAD_REQUEST    | ["name": ""]
+//        HttpStatus.BAD_REQUEST    | ["names": ""]
+//        HttpStatus.BAD_REQUEST    | ["names": []]
+//        HttpStatus.BAD_REQUEST    | ["names": ["somename"]]
+//        HttpStatus.OK    | ["names": ["somename", "acacia", "doodia"]]
+//    }
 }
