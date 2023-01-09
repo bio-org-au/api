@@ -1,4 +1,21 @@
+/*
+    Copyright 2015 Australian National Botanic Gardens
+
+    This file is part of NSL API project.
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy
+    of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
 package au.org.biodiversity.nslapi.services
+
 
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
@@ -41,7 +58,7 @@ class NameServiceImplSpec extends Specification {
 //        then:
 //        response.status() == status
 //        response.body()?.noOfResults == rm
-//        response.body()?.results[0]?.noOfResults == rm1
+//        response.body()?.results?.first()?.noOfResults == rm1
 //
 //        where:
 //        status                  | rm1     | rm     | names
@@ -101,7 +118,7 @@ class NameServiceImplSpec extends Specification {
         List listofRecords = nameService.buildMapInRightOrder(records, "hello")
 
         then:
-        Map record = listofRecords[0] as Map
+        Map record = listofRecords.first() as Map
         record.toString().indexOf("resultNameMatchType") == pos
 
         where:

@@ -1,17 +1,35 @@
+/*
+    Copyright 2015 Australian National Botanic Gardens
+
+    This file is part of NSL API project.
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy
+    of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
 package au.org.biodiversity.nslapi.services
 
 import au.org.biodiversity.nslapi.jobs.GetReleaseJob
-import groovy.json.JsonBuilder
+import au.org.biodiversity.nslapi.util.Performance
 import groovy.json.JsonSlurper
-import groovy.time.TimeCategory
-import groovy.time.TimeDuration
 import groovy.util.logging.Slf4j
+import io.micronaut.context.annotation.Property
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+
+import java.text.SimpleDateFormat
 
 @Slf4j
 @Singleton
@@ -23,68 +41,90 @@ class NameServiceImpl implements NameService {
     @Inject
     ApiAccessService apiAccessService
 
+    @Property(name = 'nslapi.app.environ')
+    String envPropertyName
+
     /**
-     * Build and execute graph query for bdr skos output
+     * Build bdr skos output links and return a map
      *
-     * @param String
+     * @param Map b
      * @return HttpResponse
      */
-    String getBdrSkosOutput() {
-        HttpRequest request = apiAccessService.buildRequest()
-        HttpResponse<Map> response = httpClient.toBlocking().exchange(request, Map)
-        Map stats = [
-                "bdr_context": response?.body()?.data['dapni_bdr_context'].size(),
-                "bdr_sdo": response?.body()['data']['dapni_bdr_graph']['bdr_sdo'][0].size(),
-                "bdr_schema": response?.body()['data']['dapni_bdr_graph']['bdr_schema'][0].size(),
-                "bdr_labels": response?.body()['data']['dapni_bdr_graph']['bdr_labels'].size(),
-                "bdr_top_concept": response?.body()['data']['dapni_bdr_graph']['bdr_top_concept'][0].size(),
-                "bdr_concepts": response?.body()['data']['dapni_bdr_graph']['bdr_concepts'][0].size(),
-                "bdr_alt_labels": response?.body()['data']['dapni_bdr_graph']['bdr_alt_labels'][0].size(),
-                "bdr_unplaced": response?.body()['data']['dapni_bdr_graph']['bdr_unplaced'][0].size()
-        ]
-        println(stats.toString())
-        List finalOutput = []
-        finalOutput.add(response?.body()?.data['dapni_bdr_context'][0])
-        finalOutput.add( response?.body()['data']['dapni_bdr_graph']['bdr_sdo'][0][0])
-        finalOutput.add( response?.body()['data']['dapni_bdr_graph']['bdr_schema'][0][0])
-        response?.body()['data']['dapni_bdr_graph']['bdr_labels'][0]?.each {
-            finalOutput.add it
+    HttpResponse buildBdrSkosLinks(Map b) {
+        String fileEndpoint = 'https://api.biodiversity.org.au/name/label/file.html'
+        if (b) {
+            if (b.getClass() == LinkedHashMap &&
+                    b.containsKey('format')) {
+                HttpResponse response = httpClient.toBlocking().exchange(HttpRequest.GET(fileEndpoint), String)
+                String filenames = response.body().trim()
+                        .replace("\n", ' ')
+                        .replace('BDR_name_label_', '')
+                        .replace('.zip', '')
+                if (b.get('format').toString().toLowerCase() == 'bdr') {
+                    String fileVersionValue = b.get('fileVersion').toString()?.replace('-', '')
+                    if (filenames.contains(fileVersionValue)) {
+                        String genFileName = "BDR_name_label_${fileVersionValue}.zip"
+                        log.info("Filename generated: ${genFileName}")
+                        HttpResponse.ok([
+                                status: HttpStatus.OK,
+                                "link": "https://api.biodiversity.org.au/name/label/" + genFileName
+                        ])
+                    } else {
+                        List filenamesList = filenames.split(' ')
+                        SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd")
+                        Date now = new Date()
+                        String todaysFileName = 'BDR_name_label_' + sdf.format(now).toString() + ".zip"
+                        String link = "https://api.biodiversity.org.au/name/label/${todaysFileName}"
+                        String message = "${b.get('fileVersion').toString()} did not match any fileVersion, " +
+                                "returning a link to the most current fileVersion. A link to all available versions " +
+                                "can be found in allVersionsLink attribute in this response"
+                        String allVersionsLink = "https://api.biodiversity.org.au/name/label/index.html"
+                        HttpResponse.ok([
+                                "status": HttpStatus.OK,
+                                "link": link,
+                                "message": message,
+                                "allVersionsLink": allVersionsLink
+                        ])
+                    }
+                } else {
+                    HttpResponse.badRequest([
+                            "status": "error",
+                            message: "The format field in the body has invalid value, " +
+                                    "pass a valid value. Example: BDR"
+                    ])
+                }
+            } else {
+                HttpResponse.badRequest([
+                        "status": "error",
+                        "message": "The body is not a valid object or does not " +
+                                "contain a field called 'format'"
+                ])
+            }
+
+        } else {
+            HttpResponse.badRequest([
+                    "status": "error",
+                    "message": "The request is missing body"
+            ])
         }
-        finalOutput.add( response?.body()['data']['dapni_bdr_graph']['bdr_top_concept'][0][0])
-        response?.body()['data']['dapni_bdr_graph']['bdr_concepts'][0].each {
-            finalOutput.add it
-        }
-        response?.body()['data']['dapni_bdr_graph']['bdr_alt_labels'][0]?.each {
-            finalOutput.add it
-        }
-        response?.body()['data']['dapni_bdr_graph']['bdr_unplaced'][0].each {
-            finalOutput.add it
-        }
-        // println(finalOutput.toString())
-        new File('/tmp','bdr_out.json').withWriter('utf-8') {
-         writer -> writer.writeLine(new JsonBuilder(finalOutput).toPrettyString())
-        }
-        "done"
-        // response
     }
 
     /**
      * Check and process name from a search string;
      * Build graphql request and process the results
      *
-     * @param searchText
+     * @param searchText String
+     * @param datasetID String
      * @return HttpResponse
      */
     HttpResponse checkAndProcessName(String searchText, String datasetID) {
         Date start = new Date()
-        Date stop = null
-        TimeDuration td = null
 
         // Default variables and pre values
         Map initialResponse = [
             "verbatimSearchString": searchText,
            "datasetSearched": datasetID,
-           "license": "http://creativecommons.org/licenses/by/3.0/"
+           "license": "https://creativecommons.org/licenses/by/3.0/"
         ]
         Map provMap = ["wasAttributedTo": GetReleaseJob.provenanceUrl]
         if(validateNameString(searchText)) {
@@ -94,7 +134,7 @@ class NameServiceImpl implements NameService {
             HttpResponse<Map> response = httpClient.toBlocking().exchange(request, Map)
             Map responseBodyAsMap = response.body() as Map
             // log.debug("responseBodyAsMap: ${responseBodyAsMap.toString()}...")
-            printTime(start, 9)
+            Performance.printTime(start, 9)
             // dataset passed or not
             String datasetSearched = (datasetID == '%') ? 'nsl' : datasetID
             initialResponse["datasetSearched"] = datasetSearched
@@ -113,12 +153,12 @@ class NameServiceImpl implements NameService {
                     // make another request and process response
                     HttpRequest newRequest = apiAccessService.buildRequest('post', newSearchText, datasetID, true)
                     HttpResponse<Map> newResponse = httpClient.toBlocking().exchange(newRequest, Map)
-                    printTime(start, 6)
+                    Performance.printTime(start, 6)
                     Map newResponseBodyAsMap = newResponse.body()
                     List finalAllRecords = newResponseBodyAsMap?.get("data")?.get("api_names")
                     // Build no match response with gnparser if empty response
                     if (!finalAllRecords) {
-                        printTime(start, 5)
+                        Performance.printTime(start, 5)
                         HttpResponse.<Map> ok(initialResponse <<
                                 ["noOfResults": finalAllRecords.size(),
                                  "resultNameMatchType": "No match",
@@ -126,7 +166,7 @@ class NameServiceImpl implements NameService {
                                 ]
                         )
                     }
-                    printTime(start, 4)
+                    Performance.printTime(start, 4)
                     // Build partial and exact match if response had records
                     HttpResponse.<Map> ok(initialResponse <<
                             ["noOfResults": finalAllRecords.size(),
@@ -136,7 +176,7 @@ class NameServiceImpl implements NameService {
                     )
                 } else {
                     // Build no match response without gnparser
-                    printTime(start, 3)
+                    Performance.printTime(start, 3)
                     HttpResponse.<Map> ok( initialResponse <<
                             ["noOfResults": 0,
                              "processedSearchString": searchText,
@@ -154,7 +194,7 @@ class NameServiceImpl implements NameService {
                 log.debug("matchedString: ${searchText}")
                 // Add applied processes to provenance
                 provMap["appliedProcesses"] = [ "None" ]
-                printTime(start, 2)
+                Performance.printTime(start, 2)
                 HttpResponse.<Map> ok(initialResponse <<
                         ["noOfResults": allRecords?.size(),
                          "processedSearchString": searchText,
@@ -166,7 +206,7 @@ class NameServiceImpl implements NameService {
         } else {
             // When the name validation fails respond with minimal response
             provMap["appliedProcesses"] = [ "None" ]
-            printTime(start, 1)
+            Performance.printTime(start, 1)
             HttpResponse.<Map> ok(initialResponse <<
                     ["noOfResults": 0,
                      "processedSearchString": "",
@@ -295,9 +335,10 @@ class NameServiceImpl implements NameService {
         (!d.matches('^[a-zA-Z]+')) ? null : d
     }
 
-    void printTime(Date start, Integer num) {
-        Date stop = new Date()
-        log.debug("${num}: ${TimeCategory.minus( stop, start )}")
+    Boolean validateVersion(String v) {
+        if (v && v.length() == 8) {
+            List date = [v[0..3], v[4..5], v[5..6]]
+        } else { false }
     }
 }
 

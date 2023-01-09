@@ -1,3 +1,19 @@
+/*
+    Copyright 2015 Australian National Botanic Gardens
+
+    This file is part of NSL API project.
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy
+    of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
 package au.org.biodiversity.nslapi.services
 
 import au.org.biodiversity.nslapi.exceptions.InvalidRequestTypeException
@@ -20,9 +36,6 @@ class ApiAccessServiceImpl implements ApiAccessService {
 
     @Property(name = "nslapi.graphql.adminSecret")
     String graphqlAdminSecret
-
-    @Property(name = "nslapi.gnparser.apiUrl")
-    String gnparserApiEndpoint
 
     @Property(name = "nslapi.queries.bdr-skos")
     String bdrSkosQuery
@@ -79,7 +92,7 @@ class ApiAccessServiceImpl implements ApiAccessService {
      */
     HttpRequest buildRequest(String requestType, String searchString, String datasetID, Boolean graphRequest = true) {
         HttpRequest request = null
-        String endpoint = graphRequest ? graphEndpoint : gnparserApiEndpoint
+        String endpoint = graphEndpoint
         // Build correct request type
 
         switch (requestType.toLowerCase()) {
@@ -116,11 +129,19 @@ class ApiAccessServiceImpl implements ApiAccessService {
      * @param query
      * @return HttpRequest
      */
-    HttpRequest buildRequest() {
+    HttpRequest buildRequest( String scheme) {
+        Map contextMap = ["apni": "apc apni",
+                          "afd": "afd afdi",
+                          "moss": "abl abni",
+                          "algae": "aal aani",
+                          "fungi": "afl afni",
+                          "lichen": "all alni"]
         HttpRequest request = null
         // Currently only used bye bdr skos query
         // TODO: make is general purpose
-        String graphQuery = bdrSkosQuery
+        String graphQuery = bdrSkosQuery.replace('SHARDSCHEMENAME', scheme).replace('SHARDCONTEXTVALUE', contextMap[scheme[1..scheme.size()-1]])
+
+        println(graphQuery)
         if (graphQuery) {
             request =  HttpRequest.POST(graphEndpoint, graphQuery)
                     .header('x-hasura-admin-secret', graphqlAdminSecret)

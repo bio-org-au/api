@@ -95,16 +95,16 @@ run {
         println "nslapi version: $version"
 
         String originalFn = "build/classes/groovy/main/META-INF/swagger/nsl-api-0.0.1.yml"
-        String newFn = "build/classes/groovy/main/META-INF/swagger/nsl-api-0.0.1-copy.yml"
-        String newVersion = "$version"
+        String newFn = "build/classes/groovy/main/META-INF/swagger/nsl-api-${version}.yml"
+        String indexFn = "build/classes/groovy/main/META-INF/swagger/views/swagger-ui/index.html"
 
         File swaggerFile = new File(originalFn)
         File NewSwaggerFile = new File(newFn)
 
         NewSwaggerFile.withWriter { w ->
             swaggerFile.eachLine { l->
-                if (l.contains('  version: ')) {
-                    l = '  version: ' + newVersion
+                if (l.contains('  version: 0.0.1')) {
+                    l = '  version: ' + version
                     println l
                 }
                 w << l + System.getProperty("line.separator")
@@ -112,12 +112,19 @@ run {
         }
         Boolean deleted = swaggerFile.delete()
         if (deleted) {
-            NewSwaggerFile.renameTo(originalFn)
+            NewSwaggerFile.renameTo(newFn)
             println "Done updating swagger version!!!"
         } else {
             println "FAILED to match swagger version with app version"
         }
-
+        // Change index file
+        File indexFile = new File(indexFn)
+        indexFile.renameTo(indexFn + ".bak")
+        new File(indexFn).withWriter { w ->
+            new File(indexFn + ".bak").eachLine { line ->
+                w << line.replaceAll( '0.0.1', version) + System.getProperty("line.separator")
+            }
+        }
     }
 }
 
@@ -137,11 +144,6 @@ java {
     sourceCompatibility = JavaVersion.toVersion("11")
     targetCompatibility = JavaVersion.toVersion("11")
 }
-
-//task setupTestDb(type: Exec) {
-//    workingDir "$projectDir/src/test/resources"
-//    commandLine './setup_test_db.sh'
-// }
 
 test {
     finalizedBy jacocoTestReport // report is always generated after tests run

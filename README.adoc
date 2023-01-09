@@ -5,17 +5,14 @@
 . __Java__ - 11 (openjdk version "11.0.11" 2021-04-20)
 . __Micronaut__ - 3.1.4
 
-=== API Versions
-
-. 0.0.2
-
 === Building the project
 
 === Prerequisites
 
 . Download and setup Java 11. You could use sdkman to do so
 . Add a config file to `~/.nsl/` directory with name `nsl-api-config.groovy`
-. Have hasura running on any port. Can be configured in config file above
+. Have graphql engine running on any port. Can be configured in config file above
+. A Graphql metadata is managed in hasura-config repository in ibis cloud
 
 [source,shell script]
 ----

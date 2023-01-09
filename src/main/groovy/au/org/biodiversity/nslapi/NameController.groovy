@@ -1,3 +1,19 @@
+/*
+    Copyright 2015 Australian National Botanic Gardens
+
+    This file is part of NSL API project.
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy
+    of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
 package au.org.biodiversity.nslapi
 
 import au.org.biodiversity.nslapi.services.ApiAccessService
@@ -5,14 +21,14 @@ import au.org.biodiversity.nslapi.services.NameService
 import groovy.util.logging.Slf4j
 import io.micronaut.core.annotation.Nullable
 import io.micronaut.http.HttpResponse
-
-//import au.org.biodiversity.nslapi.services.GraphCallService
-
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.*
 import io.micronaut.scheduling.TaskExecutors
 import io.micronaut.scheduling.annotation.ExecuteOn
 import io.swagger.v3.oas.annotations.Hidden
+
+//import au.org.biodiversity.nslapi.services.GraphCallService
+
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -133,23 +149,34 @@ class NameController {
 
     // /check/name endpoint - GET
     // Swagger Annotations
-    @Operation(summary = "Get Skos output for BDR",
-            description = "This endpoint delivers SKOS output for BDR data. It delivers data for each shard separately and takes the shard as parameter")
+    @Operation(summary = "Get Skos output links for NSL dataset",
+            description = "This endpoint delivers SKOS output as a zip file of six individual datasets namely algae, vascular plants, lichens, mosses, fungi and animals")
     @ApiResponse(responseCode = "200",
             description = "If valid get request is sent, the endpoint will return a json",
             content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400",
             description = "If invalid http GET request is sent, then the endpoint will return invalid request message as json",
             content = @Content(mediaType = "application/json"))
-    @Schema(description = "Get SKOS conformant json-LD data")
+    @Schema(description = "Get SKOS compliant jsonld data as ZIP file including one file for each NSL datasets")
+    @RequestBody(
+            description = "Provide a body with a key 'fileVersion' in YYYY-MM-DD format",
+            required = true,
+            content = @Content(
+                    schema = @Schema(implementation = Map.class),
+                    mediaType = MediaType.APPLICATION_JSON,
+                    examples = @ExampleObject(
+                            value = '{"format": "BDR","fileVersion": "2022-08-05"}'
+                    )
+            )
+    )
     @Tag(name = "label")
     // mn annotations
-    @Get("/label")
+    @Post("/label")
     @ExecuteOn(TaskExecutors.IO)
     @SuppressWarnings('GrMethodMayBeStatic')
     @Produces(MediaType.APPLICATION_JSON)
-    String label() {
-        // Validate name string
-        nameService.getBdrSkosOutput()
+    HttpResponse label(@Body Map body) {
+        // Send links of the files as a map
+        nameService.buildBdrSkosLinks(body)
     }
 }

@@ -1,7 +1,7 @@
 /*
-    Copyright (c) 2021 Australian National Botanic Gardens and Authors
+    Copyright 2015 Australian National Botanic Gardens
 
-    This file is part of National Species List project.
+    This file is part of NSL API project.
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not
     use this file except in compliance with the License. You may obtain a copy
@@ -13,6 +13,8 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
+
+
 package au.org.biodiversity.nslapi
 
 import groovy.transform.CompileStatic

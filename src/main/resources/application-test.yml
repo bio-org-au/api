@@ -3,7 +3,6 @@ micronaut:
     name: nslapi
   server:
     port: 8095
-    host: localhost
     netty:
       worker:
         threads: 75
@@ -25,6 +24,10 @@ micronaut:
       swagger-ui:
         paths: classpath:META-INF/swagger/views/swagger-ui
         mapping: /try/**
+  http:
+    client:
+      max-content-length: 1010485760
+      read-timeout: 300
 
 datasources:
   default:
@@ -43,5 +46,3 @@ nslapi:
   graphql:
     url: ${nslapi.graphql.url:`http://localhost:8080/v1/graphql/`}
     adminSecret: ${nslapi.graphql.adminSecret:admin}
-  gnparser:
-    apiUrl: https://parser.globalnames.org/api/v1/

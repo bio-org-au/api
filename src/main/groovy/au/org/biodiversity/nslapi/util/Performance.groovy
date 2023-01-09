@@ -14,19 +14,15 @@
     limitations under the License.
 */
 
-package au.org.biodiversity.nslapi.exceptions
+package au.org.biodiversity.nslapi.util
 
-import io.micronaut.test.extensions.spock.annotation.MicronautTest
-import spock.lang.Specification
+import groovy.time.TimeCategory
+import groovy.util.logging.Slf4j
 
-@MicronautTest
-class InvalidRequestTypeExceptionSpec extends Specification {
-
-    def "Check constructor"() {
-        when:
-        def customException = new InvalidRequestTypeException("custom message")
-
-        then:
-        customException.getMessage() == "custom message"
+@Slf4j
+class Performance {
+    static void printTime(Date start, Integer num) {
+        Date stop = new Date()
+        log.debug("${num}: ${TimeCategory.minus( stop, start )}")
     }
 }

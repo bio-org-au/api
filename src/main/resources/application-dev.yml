@@ -3,7 +3,6 @@ micronaut:
     name: nslapi
   server:
     port: 8095
-    host: localhost
     thread-selection: IO
     netty:
       worker:
@@ -15,6 +14,7 @@ micronaut:
   http:
     client:
       max-content-length: 1010485760
+      read-timeout: 300
   executors:
     io:
       type: fixed

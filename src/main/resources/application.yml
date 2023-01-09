@@ -3,7 +3,6 @@ micronaut:
     name: nslapi
   server:
     port: 8095
-    host: localhost
     netty:
       worker:
         threads: 75
@@ -14,6 +13,7 @@ micronaut:
   http:
     client:
       max-content-length: 1010485760
+      read-timeout: 300
   executors:
     io:
       type: fixed
@@ -54,5 +54,3 @@ nslapi:
   graphql:
     url: http://localhost:8080/v1/graphql/
     adminSecret: admin
-  gnparser:
-    apiUrl: https://parser.globalnames.org/api/v1/
