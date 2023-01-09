@@ -63,7 +63,7 @@ class ApiAccessServiceImpl implements ApiAccessService {
                 "$queryProperties" +
                 "$queryVariables" +
                 '}'
-//        log.debug("Gen Query: " + generatedQuery)
+        // log.debug("Gen Query: " + generatedQuery)
         generatedQuery
     }
 

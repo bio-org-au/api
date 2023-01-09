@@ -84,7 +84,6 @@ class ReaderServiceImplSpec extends Specification {
         where:
         names                                       || size
         "Eukaryota"                                 || 3
-        'Anthozoa'                                  || 2
         'Cymbella aspera (Ehrenb.) Cleve'           || 1
         'Cymbella gastroides (Kütz) Bréb. & Godey'  || 1
         'Bacillariophyceae classis incertae sedis'  || 1

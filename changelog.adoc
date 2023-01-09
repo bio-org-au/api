@@ -1,0 +1,54 @@
+== Change log
+
+
+===  (v0.0.2)
+
+. Removed anthzoa from tests and added info endpoint
+. Implement GNParser integration with slow response time
+. Fixed test cases for verbatim changes
+. Added verbatim changes
+. Added new api functionality
+. Added a job to get release info
+. More test cases to fill gap coverage
+. Added new Controllers, Services and changed graph queries
+. Added hasura graphql query generation code
+. Build graphql service and name service
+. Add test cases with coverage reports
+. Enhance swagger Documentation; Fix number of processed names count
+. Added index page and styles; ran as service
+. Enable swagger UI on new URLs
+. Minor changes from today
+. Fixed Getting multiple results from taxon view
+. Added bulk search endpoint and tomcat support
+. More Work on getting multiple results from taxon view
+. After demo with dates bug
+. Getting multiple results from taxon view
+. Getting single result from taxon view
+. Added swagger support and v1 controller
+
+===  v0.0.1:
+
+. Initial version
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

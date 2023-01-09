@@ -34,7 +34,7 @@ nslapi:
     eLimit: ${nslapi.search.exactLimit:10}
     pLimit: ${nslapi.search.partialLimit:50}
   graphql:
-    url: ${nslapi.graphql.url:`http://localhost:8080/v1/graphql`}
+    url: ${nslapi.graphql.url:`http://localhost:8080/v1/graphql/`}
     adminSecret: ${nslapi.graphql.adminSecret:admin}
   gnparser:
     apiUrl: https://parser.globalnames.org/api/v1/

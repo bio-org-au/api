@@ -1,4 +1,25 @@
 #!/bin/bash
+#!/bin/bash
+if type -p java; then
+    _java=java
+elif [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
+    _java="$JAVA_HOME/bin/java"
+else
+    echo "Java not found. use sdkman to install java 11"
+fi
+
+if [[ "$_java" ]]; then
+    version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
+    echo version "$version"
+    major_version="${version%%.*}"
+    if [[ "major_version" -ne "11" ]]; then
+        echo "You need java version 11 to run the project"
+        exit 1
+    else
+        echo "Compatible version of java found"
+    fi
+fi
+
 export NSLAPISERVERPORT=8095
 for process in $(netstat -peanut | grep LISTEN | grep $NSLAPISERVERPORT | awk '{print $9}' | sed 's/\/java//g');
 do

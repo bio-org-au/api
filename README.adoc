@@ -1,0 +1,76 @@
+== NSL API Version 1.0
+
+=== Framework Versions
+
+. __Java__ - 11 (openjdk version "11.0.11" 2021-04-20)
+. __Micronaut__ - 3.1.4
+
+=== API Versions
+
+. 0.0.2
+
+=== Building the project
+
+=== Prerequisites
+
+. Download and setup Java 11. You could use sdkman to do so
+. Add a config file to `~/.nsl/` directory with name `nsl-api-config.groovy`
+. Have hasura running on any port. Can be configured in config file above
+
+[source,shell script]
+----
+#!/bin/bash
+sdk install java 11.0.11.hs-adpt
+sdk default java 11.0.11.hs-adpt
+----
+
+==== Linux
+
+Use the `./run-api.sh` script to run the project
+It checks if Java 11 is available on the running machine and exit if it doesnot exist.
+It also sets some environment variables
+
+Run tests using the `./test-api.sh` script
+
+==== IntelliJ
+
+You can load the project in IntelliJ as a Gradle project and create a run configuration as a `Micronaut` or `Gradle` application.
+
+You can simply run the project using the `play` button once all dependencies are resolved.
+
+===== Micronaut Run Configuration
+
+
+[cols="1,1"]
+|===
+| Name | nslapi
+| Main Class | au.org.biodiversity.nslapi.Application
+| VM Options | -Dmicronaut.config.files=/home/mo/.nsl/nsl-api-config.groovy
+| Environment vars | NSL_API_DB_USER=hasura;NSL_API_DB_PWD=hasura;NSL_API_DB_SCHEMA=api;NSL_API_DB_URL=postgresql://localhost:5432/nslapi;MICRONAUT_SERVER_PORT=7171
+| JDK/JRE | 11
+|===
+
+===== Gradle Run Configuration
+
+[cols="1,1"]
+|===
+| Run | clean build run
+| Gradle project | nslapi
+| Env Vars | MICRONAUT_ENVIRONMENTS=dev;NSLAPIDBUSER=hasura;NSLAPIDBPWD=hasura;NSLAPIDBSCHEMA=api;NSLAPIDBURL=postgresql://127.0.0.1:5432/nslapi;MICRONAUT_CONFIG_FILES=/home/mo/.nsl/nsl-api-config.groovy;NSLAPICONFIGPATH=/home/mo/.nsl/nsl-api-config.groovy;MICRONAUT_SERVER_PORT=8095
+|===
+
+=== Provenance
+
+The provenance of data is displayed in each response using the repository url. Sample output below.
+
+[source,json]
+----
+{
+    "result": {
+        "some_key": "its_attribute"
+    },
+    "provenance": {
+        "wasAttributedTo": "http://github.com/bio-org-au/nslapi/releases/tag/1.0.0
+}
+}
+----

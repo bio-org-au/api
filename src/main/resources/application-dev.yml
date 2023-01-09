@@ -34,7 +34,7 @@ nslapi:
     eLimit: 8
     pLimit: 45
   graphql:
-    url: http://localhost:8080/v1/graphql
+    url: http://localhost:8080/v1/graphql/
     adminSecret: admin
   gnparser:
     apiUrl: https://parser.globalnames.org/api/v1/

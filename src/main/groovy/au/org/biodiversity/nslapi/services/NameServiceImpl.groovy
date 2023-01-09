@@ -1,6 +1,6 @@
 package au.org.biodiversity.nslapi.services
 
-
+import au.org.biodiversity.nslapi.jobs.GetReleaseJob
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -35,13 +35,14 @@ class NameServiceImpl implements NameService {
         // dataset passed or not
         String datasetSearched = (datasetID == '%') ? 'all' : datasetID
         // Empty response
+        Map provMap = ["wasAttributedTo": GetReleaseJob.provenanceUrl]
         if (responseBodyAsMap?.get("data")?.get("api_names") == []) {
             log.debug("unMatchString: ${searchText}")
             Map atomisedMatchResult = performAtomisedMatch(searchText)
             if (atomisedMatchResult?.get("parsed")) {
-                String newSearchText = atomisedMatchResult.get("normalized")
+                String newSearchText = atomisedMatchResult.get("canonical").get("simple")
                 log.debug("newsearchtext: $newSearchText")
-                HttpRequest newRequest = apiAccessService.buildRequest('post', searchText, datasetID, true)
+                HttpRequest newRequest = apiAccessService.buildRequest('post', newSearchText, datasetID, true)
                 HttpResponse<Map> newResponse = httpClient.toBlocking().exchange(newRequest, Map)
                 Map newResponseBodyAsMap = newResponse.body()
                 List finalAllRecords = newResponseBodyAsMap?.get("data")?.get("api_names")
@@ -53,7 +54,8 @@ class NameServiceImpl implements NameService {
                              "datasetSearched": datasetSearched,
                              "resultNameMatchType": "No match",
                              "GNParserMatched": atomisedMatchResult?.get("parsed"),
-                             "GNParserVersion": atomisedMatchResult?.get("parserVersion")
+                             "GNParserVersion": atomisedMatchResult?.get("parserVersion"),
+                             "provenance": provMap
                             ]
                     )
                 }
@@ -67,6 +69,7 @@ class NameServiceImpl implements NameService {
                          "datasetSearched": datasetSearched,
                          "GNParserMatched": atomisedMatchResult?.get("parsed"),
                          "GNParserVersion": atomisedMatchResult?.get("parserVersion"),
+                         "provenance": provMap,
                          "results": finalAllRecords
                         ]
                 )
@@ -78,7 +81,8 @@ class NameServiceImpl implements NameService {
                          "datasetSearched": datasetSearched,
                          "resultNameMatchType": "No match",
                          "GNParserMatched": atomisedMatchResult?.get("parsed"),
-                         "GNParserVersion": atomisedMatchResult?.get("parserVersion")
+                         "GNParserVersion": atomisedMatchResult?.get("parserVersion"),
+                         "provenance": provMap
                         ]
                 )
             }
@@ -92,13 +96,14 @@ class NameServiceImpl implements NameService {
             }
             // Return all records with the response
             log.debug("matchedString: ${searchText}")
+
             HttpResponse.<Map> ok(
                     ["noOfResults": allRecords?.size(),
                      "verbatimSearchString": searchText,
                      "processedSearchString": searchText,
                      "datasetSearched": datasetSearched,
-                     "provenance": "https://github.com/bio-org-au/nslapi/releases/tag/v0.1.0",
-                     "results": allRecords,
+                     "provenance": provMap,
+                     "results": allRecords
                     ]
             )
         }
@@ -112,7 +117,6 @@ class NameServiceImpl implements NameService {
     Map performAtomisedMatch(String s) {
         HttpRequest gnpRequest = apiAccessService.buildRequest('get', s, '', false)
         HttpResponse<Map> gnpResponse = httpClient.toBlocking().exchange(gnpRequest, Map)
-        log.debug(gnpResponse.body().toString())
         gnpResponse.body()
     }
 }
