@@ -1,17 +1,31 @@
 #!/bin/bash
-JAVA_HOME=/home/mo/.sdkman/candidates/java/11.0.11.hs-adpt/
-MICRONAUT_SERVER_PORT=7171
-NSL_API_CONFIG_PATH=/home/mo/.nsl/nsl-api-config.groovy
-NSL_API_DB_USER=hasura
-NSL_API_DB_PWD=hasura
-NSL_API_DB_URL=nslapi
-NSL_API_DB_SCHEMA=api
-#JAVA_OPTS="$JAVA_OPTS -Dmicronaut.config.files=$NSL_API_CONFIG_PATH"
-export MICRONAUT_CONFIG_FILES=/home/mo/.nsl/nsl-api-config.groovy
-echo $NSL_API_CONFIG_PATH
-echo $NSL_API_DB_USER
-echo $NSL_API_DB_PWD
-echo $NSL_API_DB_URL
-echo $NSL_API_DB_SCHEMA
-echo $MICRONAUT_CONFIG_FILES
-./gradlew run -t
+export NSLAPISERVERPORT=8095
+for process in $(netstat -peanut | grep LISTEN | grep $NSLAPISERVERPORT | awk '{print $9}' | sed 's/\/java//g');
+do
+  echo "Killing ps $item"
+  kill -9 $item;
+done
+export NSLAPICONFIGPATH=/home/mo/.nsl/nsl-api-config.groovy
+export NSLAPIDBUSER=hasura
+export NSLAPIDBPWD=hasura
+export NSLAPIDBNAME=nslapi
+export NSLAPIDBURL="postgresql://localhost:5432/"$NSLAPIDBNAME
+export NSLAPIDBSCHEMA=api
+versionNumber=$(cat build.gradle | grep '^version "' | sed 's/version \"//g' | sed 's/\"//g')
+echo "Building NSL API: v"$versionNumber
+./gradlew clean assemble
+echo "Running version: "$versionNumber
+JARFILE="build/libs/nslapi-"$versionNumber"-all.jar"
+echo $NSLAPICONFIGPATH
+echo "DB in script: $NSLAPIDBURL u:$NSLAPIDBUSER p: $NSLAPIDBPWD s: $NSLAPIDBSCHEMA"
+
+#./gradlew run -t
+if [ ! -f $jarfilename ]; then
+  echo "you need mapper-*.jar in build/libs/"
+  exit 1
+fi
+java -version
+java \
+-XX:+UnlockExperimentalVMOptions -Dcom.sun.management.jmxremote -noverify \
+-Dmicronaut.config.files=${NSLAPICONFIGPATH} -Dmicronaut.server.port=${NSLAPISERVERPORT} \
+-jar ${JARFILE}

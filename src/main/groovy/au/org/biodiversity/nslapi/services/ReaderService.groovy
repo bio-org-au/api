@@ -26,11 +26,28 @@ import au.org.biodiversity.nslapi.ApiTaxonView
 
 interface ReaderService {
     /**
-     * Gets tuples from
+     * Gets a tuple from the database as ATV Object
      * @param none
      * @return ApiTaxonView object
      */
-    ApiTaxonView getRow()
+    ApiTaxonView getRow(String sql)
 
-    List<ApiTaxonView> getRows()
+    /**
+     * Gets tuples from the database as a list of ATV Objects
+     * @param none
+     * @return ApiTaxonView object
+     */
+    List<ApiTaxonView> getRows(String sql)
+
+    /**
+     * Build SQL query with and without wild card to get data from the api_taxon_view
+     * Three functions to cover optional params
+     * @param String searchString,
+     *        String column to match,
+     *        Boolean rightWildCrd
+     * @return String
+     */
+    public String buildSql(String value)
+    public String buildSql(String value, String column)
+    public String buildSql(String value, String column, Integer limit)
 }

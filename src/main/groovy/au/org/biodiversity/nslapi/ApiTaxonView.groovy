@@ -3,6 +3,7 @@ package au.org.biodiversity.nslapi
 import au.org.biodiversity.nslapi.services.ReaderService
 
 import java.lang.reflect.Modifier
+import java.sql.Timestamp
 
 class ApiTaxonView {
     ReaderService readerService
@@ -25,8 +26,8 @@ class ApiTaxonView {
     String classs
     String subclass
     String family
-    String created
-    String modified
+    Timestamp created
+    Timestamp modified
     String datasetName
     String taxonConceptID
     String nameAccordingTo
@@ -65,8 +66,8 @@ class ApiTaxonView {
             this.classs = data.class            // note the field name is a keyword
             this.subclass = data.subclass
             this.family = data.family
-            this.created = data.created
-            this.modified = data.modified
+            this.created = data.created as Timestamp
+            this.modified = data.modified as Timestamp
             this.datasetName = data.datasetName
             this.taxonConceptID = data.taxonConceptID
             this.nameAccordingTo = data.nameAccordingTo
@@ -87,11 +88,11 @@ class ApiTaxonView {
     @Override
     String toString() {
         """ Object of ApiTaxonView -> 
-        taxonID: $taxonID,
+        taxonID: $taxonID, created: $created,
         nomenclaturalCode: $nomenclaturalCode, datasetName: $datasetName,
         nameType: $nameType, taxonomicStatus: $taxonomicStatus,
         taxonRank: $taxonRank, scientificName: $scientificName,
-        higherClassification: $higherClassification
+        higherClassification: $higherClassification 
         """
     }
 
@@ -99,7 +100,8 @@ class ApiTaxonView {
         Map result = this.class.declaredFields.findAll({
             it.modifiers == Modifier.PRIVATE
         }).collectEntries({
-            [ (it.name):this[it.name] ]
+            println("name: ${it.name} -- value: ${this[it.name].toString()}")
+            [ (it.name):this[it.name].toString() ]
         })
         result.remove('readerService')
         result

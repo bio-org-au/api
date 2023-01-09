@@ -3,12 +3,10 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.0"
     id("io.micronaut.application") version "2.0.8"
     id("org.asciidoctor.jvm.convert") version "3.3.2"
-    id("application")
-    id("war")
 }
 
-version = "0.1"
-group = "au.org.biodiversity.nslapi"
+version "0.1"
+group "au.org.biodiversity.nslapi"
 
 ext {
     micronautVersion = "3.1.4"
@@ -20,7 +18,6 @@ repositories {
 }
 
 micronaut {
-    runtime("netty")
     testRuntime("spock2")
     processing {
         incremental(true)
@@ -48,12 +45,19 @@ dependencies {
     // http
     implementation("io.micronaut:micronaut-http-client")
     compileOnly("io.micronaut:micronaut-http-validation")
+    implementation("io.micronaut.servlet:micronaut-http-server-tomcat:1.0.2")
     // Logging
     runtimeOnly("ch.qos.logback:logback-classic")
+    implementation("org.codehaus.janino:janino:3.1.0")
     // swagger
     annotationProcessor("io.micronaut.openapi:micronaut-openapi:3.2.0")
+    compileOnly("io.micronaut.openapi:micronaut-openapi")
     implementation("io.swagger.core.v3:swagger-annotations")
-
+    // testing
+    testImplementation "io.micronaut.test:micronaut-test-spock"
+    testImplementation("org.spockframework:spock-core") {
+        exclude group: "org.codehaus.groovy", module: "groovy-all"
+    }
 }
 
 application {
@@ -65,13 +69,7 @@ tasks.withType(GroovyCompile) {
     groovyOptions.forkOptions.jvmArgs.add('-Dmicronaut.openapi.views.spec=rapidoc.enabled=true,swagger-ui.enabled=true,swagger-ui.theme=flattop')
 }
 
-// Load external config files
 run.classpath += configurations.developmentOnly
-run.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1', '-Dcom.sun.management.jmxremote',
-        "-Dmicronaut.config.files=${System.getenv('NSL_API_CONFIG_PATH')}")
-test.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1', '-Dcom.sun.management.jmxremote',
-        "-Dmicronaut.config.files=./src/test/resource/nsl-api-config.groovy")
-
 // Hot-Reloading
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"

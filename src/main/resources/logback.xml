@@ -1,15 +1,12 @@
 <configuration>
-
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <withJansi>true</withJansi>
-        <!-- encoders are assigned the type
-             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg %ex{10}%nopex%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%0.6thread] %-5level %logger{25} - %msg %ex{4}%nopex%n</pattern>
         </encoder>
     </appender>
-    <logger name="au.org.biodiversity" level="DEBUG "></logger>
-    <root level="INFO">
-        <appender-ref ref="STDOUT" />
-    </root>
+        <logger name="au.org.biodiversity" level="DEBUG "></logger>
+        <root level="INFO">
+            <appender-ref ref="STDOUT" />
+        </root>
 </configuration>

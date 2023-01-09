@@ -39,11 +39,15 @@ class ReaderServiceImpl implements  ReaderService {
     @Inject
     DataSource dataSource
 
-    ApiTaxonView getRow() {
+    /**
+     * Get multiple rows for the SQL passed and return a List of
+     * ApiTaxonView objects
+     * @param String sql
+     * @return List of ApiTaxonView objects
+     */
+    ApiTaxonView getRow(String s) {
         withSql { Sql sql ->
-            GroovyRowResult row = sql.firstRow('''
-                select * from api.api_taxon_view limit 5;
-            ''')
+            GroovyRowResult row = sql.firstRow(s)
             if (row) {
                 ApiTaxonView apiTaxonView = new ApiTaxonView(this, row)
                 return apiTaxonView
@@ -53,23 +57,34 @@ class ReaderServiceImpl implements  ReaderService {
         }
     }
 
-    List<ApiTaxonView> getRows() {
+    /**
+     * Get multiple rows for the SQL passed and return a List of
+     * ApiTaxonView objects
+     * @param String sql
+     * @return List of ApiTaxonView objects
+     */
+    List<ApiTaxonView> getRows(String s) {
+        log.debug("Running SQL: $s")
         List rows = []
         withSql { Sql sql ->
-            sql.eachRow('''
-                select * from api.api_taxon_view limit 5;
-            ''') {row ->
+            sql.eachRow(s) {row ->
                 def md = row.getMetaData()
                 Map rowMap = [:]
                 for (i in 1..md.getColumnCount()) {
                     rowMap.put(md.getColumnLabel(i), row[i-1])
                 }
+                log.debug "rowMap: ${rowMap.created} ${rowMap.modified}"
                 rows.add(rowMap)
             }
             return rows
         }
     }
 
+    /**
+     * Function to run SQL and return process the results using generic types
+     * @param Closure work
+     * @return Generic Type
+     */
     public <T> T withSql(Closure<T> work) {
         Sql sql = Sql.newInstance(dataSource)
         try {
@@ -77,5 +92,17 @@ class ReaderServiceImpl implements  ReaderService {
         } finally {
             sql.close()
         }
+    }
+
+    /**
+     * Build SQL query with and without wild card to get data from the api_taxon_view
+     * @param String searchString,
+     *        String column to match,
+     *        Boolean rightWildCrd
+     * @return String
+     */
+    @SuppressWarnings("GrMethodMayBeStatic")
+    public String buildSql(String value, String column = "scientificName", Integer limit = 5) {
+            return "SELECT * FROM api.api_taxon_view WHERE \"$column\" ILIKE \'$value\' LIMIT $limit;"
     }
 }

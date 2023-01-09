@@ -24,9 +24,9 @@ import io.swagger.v3.oas.annotations.info.License
 
 @OpenAPIDefinition(
     info = @Info(
-            title = "National Secies List API v1",
-            version = "1.0",
-            description = "NSL API",
+            title = "NSL API",
+            version = "0.1",
+            description = "National Species List API v0.1. Brings you the APC Dataset",
             license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0")
     )
 )
@@ -34,6 +34,10 @@ import io.swagger.v3.oas.annotations.info.License
 @CompileStatic
 class Application {
     static void main(String[] args) {
+        println("db_env: url:" + System.getenv('NSLAPIDBURL') + ' u:'
+                + System.getenv('NSLAPIDBUSER') + ' p:'
+                + System.getenv('NSLAPIDBPWD') + ' s:'
+                + System.getenv('NSLAPIDBSCHEMA'))
         Micronaut.run(Application, args)
     }
 }

@@ -2,7 +2,22 @@ micronaut:
   application:
     name: nslapi
   server:
-    port: 7171
+    port: 8095
+    host: localhost
+  router:
+    static-resources:
+      main:
+        paths: classpath:views
+        mapping: /**
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/*
+      rapidoc:
+        paths: classpath:META-INF/swagger/views/rapidoc
+        mapping: /doc/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /try/**
 
 datasources:
   default:
@@ -13,3 +28,8 @@ datasources:
     autoCommit: false
     schema: ${nslapi.db.schema:api}
     socketTimeout: 30
+---
+nslapi:
+  search:
+    eLimit: ${nslapi.search.exactLimit:10}
+    pLimit: ${nslapi.search.partialLimit:50}
