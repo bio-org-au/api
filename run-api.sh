@@ -33,7 +33,7 @@ export NSLAPIDBPWD=hasura
 export NSLAPIDBNAME=nslapi
 export NSLAPIDBURL="postgresql://localhost:5432/"$NSLAPIDBNAME
 export NSLAPIDBSCHEMA=api
-versionNumber=$(cat build.gradle | grep '^version "' | sed 's/version \"//g' | sed 's/\"//g')
+versionNumber=$(cat version.properties  | grep 'version.semver=' | sed 's/version.semver=//g')
 echo "Building NSL API: v"$versionNumber
 ./gradlew clean assemble
 echo "Running version: "$versionNumber

@@ -1,0 +1,41 @@
+components:
+  schemas:
+    NameCheckResult:
+      title: NameCheckResult
+      description: Object containg all fields for /name/check endpoint
+      type: object
+      properties:
+        "resultNameMatchType": { $ref: "#/components/schemas/ResultNameMatchType" }
+        "scientificName": { type: string }
+        "resultNameMatchStatus": { $ref: "#/components/schemas/TaxonomicStatus" }
+        "nameType": { $ref: "#/components/schemas/NameType" }
+        "taxonRank": { $ref: "#/components/schemas/TaxonRank" }
+        "scientificNameID": { type: string }
+        "taxonomicStatus": { $ref: "#/components/schemas/TaxonomicStatus" }
+        "canonicalName": { type: string }
+        "scientificNameAuthorship": { type: string }
+        "nomIlleg": { type: boolean }
+        "nomInval": { type: boolean }
+        "nomenclaturalCode": { type: string }
+        "ccAttributionIRI": { type: string }
+        "datasetName": { type: string }
+    ResultNameMatchType:
+      title: ResultNameMatchType
+      description: Possible type of name check matches
+      type: string
+      enum: ["Exact", "Partial", "No match"]
+    TaxonomicStatus:
+      title: TaxonomicStatus
+      description: Possible values for taxonimic status
+      type: string
+      enum: ["accepted", "excluded", "included", "unplaced"]
+    NameType:
+      title: NameType
+      description: Possible name types in NSL
+      type: string
+      enum: ["informal", "phrase name", "hybrid formula parents known", "named hybrid autonym", "scientific", "cultivar", "named hybrid", "cultivar hybrid", "graft/chimera", "autonym", "hybrid formula unknown 2nd parent", "intergrade"]
+    TaxonRank:
+      title: TaxonRank
+      description: Possible names of a given rank
+      type: string
+      enum: ["Aggregate Genera", "[unknown]", "SubClass", "Tribus", "[infraspecies]", "Subforma", "Series", "Superordo", "SubPhylum", "Domain", "Varietas", "SuperClass", "Section", "Regio", "SuperOrder", "Special form", "Cohort", "InfraClass", "Subfamilia", "Regnum", "Sectio", "[n/a]", "Familia", "Tribe", "SuperFamily", "Class", "[infragenus]", "Subordo", "Kingdom", "Subvarietas", "Family", "Superspecies", "SubDivision", "Incertae Sedis", "Classis", "Genus", "Species Inquirenda", "Subbdivision", "SuperTribe", "Division", "Subseries", "Aggregate Species", "SubOrder", "Phylum", "Species", "SubFamily", "Subtribus", "Subsectio", "InfraOrder", "SubTribe", "Order", "Forma", "Ordo", "[unranked]", "Subspecies", "Nothovarietas", "Subdivision", "Higher Taxon", "Subgenus", "Subclassis"]

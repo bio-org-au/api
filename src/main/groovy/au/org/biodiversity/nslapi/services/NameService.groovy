@@ -51,4 +51,6 @@ interface NameService {
      * @return HttpResponse
      */
     HttpResponse buildBdrSkosLinks(Map b)
+
+    HttpResponse searchNameByString(String searchText)
 }

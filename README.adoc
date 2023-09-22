@@ -24,7 +24,7 @@ sdk default java 11.0.11.hs-adpt
 ==== Linux
 
 Use the `./run-api.sh` script to run the project
-It checks if Java 11 is available on the running machine and exit if it doesnot exist.
+It checks if Java 11 is available on the running machine and exit if it does not exist.
 It also sets some environment variables
 
 Run tests using the `./test-api.sh` script
@@ -34,6 +34,17 @@ Run tests using the `./test-api.sh` script
 You can load the project in IntelliJ as a Gradle project and create a run configuration as a `Micronaut` or `Gradle` application.
 
 You can simply run the project using the `play` button once all dependencies are resolved.
+
+==== Versioning
+
+We use link:https://github.com/ethauvin/semver-gradle[Semantic Version Plugin for Gradle] for version changes.
+
+We can use `incrementMajor`, `incrementMinor` and `incrementPatch` gradle tasks to automatically increment version numbers
+
+[source,bash]
+----
+./gradlew incrementPatch ...
+----
 
 ===== Micronaut Run Configuration
 
@@ -67,7 +78,7 @@ The provenance of data is displayed in each response using the repository url. S
         "some_key": "its_attribute"
     },
     "provenance": {
-        "wasAttributedTo": "http://github.com/bio-org-au/nslapi/releases/tag/1.0.0,,
+        "wasAttributedTo": "http://github.com/bio-org-au/nslapi/releases/tag/1.0.0",
         "appliedProcesses": [
           "gnparser v1.6.0"
     ]

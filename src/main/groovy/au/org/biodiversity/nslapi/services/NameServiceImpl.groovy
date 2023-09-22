@@ -44,6 +44,9 @@ class NameServiceImpl implements NameService {
     @Property(name = 'nslapi.app.environ')
     String envPropertyName
 
+    @Property(name = 'nslapi.gnparser.endpoint')
+    String gnparserEndpointProperty
+
     /**
      * Build bdr skos output links and return a map
      *
@@ -122,19 +125,19 @@ class NameServiceImpl implements NameService {
 
         // Default variables and pre values
         Map initialResponse = [
-            "verbatimSearchString": searchText,
-           "datasetSearched": datasetID,
-           "license": "https://creativecommons.org/licenses/by/3.0/"
+                "verbatimSearchString": searchText,
+                "datasetSearched": datasetID,
+                "license": "https://creativecommons.org/licenses/by/3.0/"
         ]
         Map provMap = ["wasAttributedTo": GetReleaseJob.provenanceUrl]
         if(validateNameString(searchText)) {
             // Build request and get a response
-            log.debug("10: ${searchText} ------- start -------")
+            // log.debug("10: ${searchText} ------- start -------")
             HttpRequest request = apiAccessService.buildRequest('post', searchText, datasetID, true)
             HttpResponse<Map> response = httpClient.toBlocking().exchange(request, Map)
             Map responseBodyAsMap = response.body() as Map
             // log.debug("responseBodyAsMap: ${responseBodyAsMap.toString()}...")
-            Performance.printTime(start, 9)
+            // Performance.printTime(start, 9)
             // dataset passed or not
             String datasetSearched = (datasetID == '%') ? 'nsl' : datasetID
             initialResponse["datasetSearched"] = datasetSearched
@@ -153,30 +156,31 @@ class NameServiceImpl implements NameService {
                     // make another request and process response
                     HttpRequest newRequest = apiAccessService.buildRequest('post', newSearchText, datasetID, true)
                     HttpResponse<Map> newResponse = httpClient.toBlocking().exchange(newRequest, Map)
-                    Performance.printTime(start, 6)
+                    // Performance.printTime(start, 6)
                     Map newResponseBodyAsMap = newResponse.body()
                     List finalAllRecords = newResponseBodyAsMap?.get("data")?.get("api_names")
                     // Build no match response with gnparser if empty response
                     if (!finalAllRecords) {
-                        Performance.printTime(start, 5)
+                        log.warn " { \"path\": 5, \"requestOutput\": { \"duration\": \"${Performance.getTime(start)}\", \"nameProvided\": \"${searchText}\", \"nameSearched\": \"${newSearchText}\", \"matchType\": \"No Match\", \"gnparser\": \"yes\" } }"
                         HttpResponse.<Map> ok(initialResponse <<
                                 ["noOfResults": finalAllRecords.size(),
                                  "resultNameMatchType": "No match",
                                  "provenance": provMap
                                 ]
                         )
+                    } else {
+                        log.warn " { \"path\": 4, \"requestOutput\": { \"duration\": \"${Performance.getTime(start)}\", \"nameProvided\": \"${searchText}\", \"nameSearched\": \"${newSearchText}\", \"matchType\": \"Matched\", \"gnparser\": \"yes\" } }"
+                        // Build partial and exact match if response had records
+                        HttpResponse.<Map> ok(initialResponse <<
+                                ["noOfResults": finalAllRecords.size(),
+                                 "provenance": provMap,
+                                 "results": buildMapInRightOrder(finalAllRecords, newSearchText)
+                                ]
+                        )
                     }
-                    Performance.printTime(start, 4)
-                    // Build partial and exact match if response had records
-                    HttpResponse.<Map> ok(initialResponse <<
-                            ["noOfResults": finalAllRecords.size(),
-                             "provenance": provMap,
-                             "results": buildMapInRightOrder(finalAllRecords, newSearchText)
-                            ]
-                    )
                 } else {
                     // Build no match response without gnparser
-                    Performance.printTime(start, 3)
+                    log.warn " { \"path\": 3, \"requestOutput\": { \"duration\": \"${Performance.getTime(start)}\", \"nameSearched\": \"${searchText}\", \"matchType\": \"No match\", \"gnparser\": \"no\" } }"
                     HttpResponse.<Map> ok( initialResponse <<
                             ["noOfResults": 0,
                              "processedSearchString": searchText,
@@ -194,7 +198,7 @@ class NameServiceImpl implements NameService {
                 log.debug("matchedString: ${searchText}")
                 // Add applied processes to provenance
                 provMap["appliedProcesses"] = [ "None" ]
-                Performance.printTime(start, 2)
+                log.warn " { \"path\": 2, \"requestOutput\": { \"duration\": \"${Performance.getTime(start)}\", \"nameSearched\": \"${searchText}\", \"matchType\": \"Matched\", \"gnparser\": \"no\" } }"
                 HttpResponse.<Map> ok(initialResponse <<
                         ["noOfResults": allRecords?.size(),
                          "processedSearchString": searchText,
@@ -206,7 +210,7 @@ class NameServiceImpl implements NameService {
         } else {
             // When the name validation fails respond with minimal response
             provMap["appliedProcesses"] = [ "None" ]
-            Performance.printTime(start, 1)
+            log.warn " { \"path\": 1, \"requestOutput\": { \"duration\": \"${Performance.getTime(start)}\", \"nameSearched\": \"\", \"matchType\": \"No Match\", \"gnparser\": \"no\" } }"
             HttpResponse.<Map> ok(initialResponse <<
                     ["noOfResults": 0,
                      "processedSearchString": "",
@@ -215,7 +219,47 @@ class NameServiceImpl implements NameService {
                     ]
             )
         }
+    }
 
+    /**
+     * Search a name based on a search string
+     * @param String s
+     * @return HttpResponse
+     */
+    HttpResponse searchNameByString(String searchText) {
+        String query = '{"query" : "query NameSearch1($name: String) { api_testapni_name_cv_aggregate(where: {fullName: {_iregex: $name}}) { aggregate { count } } api_testapni_name_cv(where: {isScientific: {_eq: true}, isCultivar: {_eq: false}, isHybrid: {_eq: false}, fullName: {_iregex: $name}}, order_by: {sortName: asc}, limit: 100, offset: 0) { family fullName simpleName genericName specificEpithet authorship nameId nameType rank datasetName nomenclaturalCode nomenclaturalStatus primaryUsageType identifier license isAutonym isCultivar isHybrid isNameFormula isNomIlleg isNomInval isScientific kingdom modified referenceCitation sourceId uninomial typeCitation } }", "variables": { "name": "' + searchText + '" } }'
+        log.warn(query)
+        Date start = new Date()
+
+        // Default variables and pre values
+        Map initialResponse = [
+                "verbatimSearchString": searchText,
+                "license"             : "https://creativecommons.org/licenses/by/3.0/"
+        ]
+        HttpRequest request = apiAccessService.buildRequestWithQuery('post', query, true)
+        HttpResponse<Map> response = httpClient.toBlocking().exchange(request, Map)
+        Map responseBodyAsMap = response.body() as Map
+        log.debug(responseBodyAsMap.toString())
+
+        if (response.body().containsKey('errors')) {
+            log.error("ERROR MESSAGE:  ${response.body().errors.extensions.internal.error}")
+            HttpResponse.serverError(response.body().errors.extensions.internal.error.toString())
+        } else {
+            if (responseBodyAsMap?.get("data")?.get("api_names") == []) {
+
+            } else {
+                Map provMap = ["wasAttributedTo": GetReleaseJob.provenanceUrl]
+                Long noOfResults = responseBodyAsMap['data']['api_testapni_name_cv_aggregate']['aggregate']['count'] as Long
+                List results = responseBodyAsMap['data']['api_testapni_name_cv']
+                HttpResponse.<Map> ok(initialResponse <<
+                        ["noOfResults": noOfResults,
+                         "processedSearchString": searchText,
+                         "provenance": provMap,
+                         "results": results
+                        ]
+                )
+            }
+        }
     }
 
     /**
@@ -224,16 +268,11 @@ class NameServiceImpl implements NameService {
      * @return Map
      */
     Map atomisedName(String s) {
-        def sout = new StringBuilder()
-        def serr = new StringBuilder()
-        def command = ["gnparser", s, "-f", "compact"]
-        def process = command.execute()
-        process.waitFor()
-        process.consumeProcessOutput(sout, serr)
-        Map atomisedMap = [:]
-        if (sout.toString()) {
-            atomisedMap = new JsonSlurper().parseText(sout.toString()) as Map
-        }
+        String urlEncodedName = URLEncoder.encode(s, "utf-8")
+        String url = gnparserEndpointProperty + urlEncodedName
+        HttpRequest request = apiAccessService.buildRequest(gnparserEndpointProperty, 'get', s, '', false)
+        HttpResponse<Map> response = httpClient.toBlocking().exchange(request, Map)
+        Map atomisedMap = response.body() as Map
         atomisedMap
     }
 
@@ -341,4 +380,3 @@ class NameServiceImpl implements NameService {
         } else { false }
     }
 }
-

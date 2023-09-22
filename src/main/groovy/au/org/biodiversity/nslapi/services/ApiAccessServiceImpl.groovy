@@ -37,7 +37,7 @@ class ApiAccessServiceImpl implements ApiAccessService {
     @Property(name = "nslapi.graphql.adminSecret")
     String graphqlAdminSecret
 
-    @Property(name = "nslapi.queries.bdr-skos")
+    @Property(name = "nslapi.queries.bdrSkos")
     String bdrSkosQuery
 
     /**
@@ -96,11 +96,11 @@ class ApiAccessServiceImpl implements ApiAccessService {
         // Build correct request type
 
         switch (requestType.toLowerCase()) {
-            // Create a get request
+        // Create a get request
             case 'get':
                 request = HttpRequest.GET(endpoint + URLEncoder.encode(searchString, "UTF-8"))
                 break
-            // Create a post request
+                // Create a post request
             case 'post':
                 if (graphRequest) {
                     // For graphql type post request
@@ -113,7 +113,84 @@ class ApiAccessServiceImpl implements ApiAccessService {
                     request = HttpRequest.POST(endpoint, postData)
                 }
                 break
-            // For all other type of requests
+                // For all other type of requests
+            default:
+                log.debug("Unable to build a request for invalid type: $requestType")
+                throw new InvalidRequestTypeException("Unable to build a request for invalid type: $requestType")
+        }
+        // log.debug("Request: $request")
+        request
+    }
+
+    /**
+     * Create a GraphQL query and build a request object
+     *
+     * @param requestType
+     * @param name
+     * @return HttpRequest
+     */
+    HttpRequest buildRequest(String endpoint, String requestType, String searchString, String datasetID, Boolean graphRequest = true) {
+        HttpRequest request = null
+        // Build correct request type
+
+        switch (requestType.toLowerCase()) {
+        // Create a get request
+            case 'get':
+                request = HttpRequest.GET(endpoint + URLEncoder.encode(searchString, "UTF-8"))
+                break
+                // Create a post request
+            case 'post':
+                if (graphRequest) {
+                    // For graphql type post request
+                    request = HttpRequest.POST(endpoint, generateGraphQuery(searchString, datasetID))
+                            .header('x-hasura-admin-secret', graphqlAdminSecret)
+                            .header('Content-Type', 'application/json')
+                } else {
+                    // Placeholder post request for future use/enhancement
+                    String postData = ""
+                    request = HttpRequest.POST(endpoint, postData)
+                }
+                break
+                // For all other type of requests
+            default:
+                log.debug("Unable to build a request for invalid type: $requestType")
+                throw new InvalidRequestTypeException("Unable to build a request for invalid type: $requestType")
+        }
+        // log.debug("Request: $request")
+        request
+    }
+
+    /**
+     * Create a GraphQL query and build a request object
+     *
+     * @param requestType
+     * @param name
+     * @return HttpRequest
+     */
+    HttpRequest buildRequestWithQuery(String requestType, String query, Boolean graphRequest = true) {
+        HttpRequest request = null
+        String endpoint = graphEndpoint
+        // Build correct request type
+
+        switch (requestType.toLowerCase()) {
+        // Create a get request
+            case 'get':
+                request = HttpRequest.GET(endpoint)
+                break
+                // Create a post request
+            case 'post':
+                if (graphRequest) {
+                    // For graphql type post request
+                    request = HttpRequest.POST(endpoint, query)
+                            .header('x-hasura-admin-secret', graphqlAdminSecret)
+                            .header('Content-Type', 'application/json')
+                } else {
+                    // Placeholder post request for future use/enhancement
+                    String postData = ""
+                    request = HttpRequest.POST(endpoint, postData)
+                }
+                break
+                // For all other type of requests
             default:
                 log.debug("Unable to build a request for invalid type: $requestType")
                 throw new InvalidRequestTypeException("Unable to build a request for invalid type: $requestType")

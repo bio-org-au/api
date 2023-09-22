@@ -24,7 +24,7 @@ import io.micronaut.http.HttpRequest
 interface ApiAccessService {
 
     /**
-     * Create a GraphQL or webservice queries to use in a request
+     * Create a GraphQL or webservice queries to use in a request using a name string and a dataset
      *
      * @param dataset
      * @param name
@@ -40,6 +40,24 @@ interface ApiAccessService {
      * @return HttpRequest
      */
     HttpRequest buildRequest(String type, String name, String datasetID, Boolean graphRequest)
+
+    /**
+     * Create a GraphQL query and build a request object
+     *
+     * @param requestType
+     * @param name
+     * @return HttpRequest
+     */
+    HttpRequest buildRequest(String endpoint, String requestType, String searchString, String datasetID, Boolean graphRequest)
+
+    /**
+     * Create a HttpRequest object to use using a requesttype string and query in a call
+     *
+     * @param String requestType
+     * @param String query
+     * @return HttpRequest
+     */
+    HttpRequest buildRequestWithQuery(String requestType, String query, Boolean graphRequest)
 
     /**
      * Generate a qraph query using variables to it can be

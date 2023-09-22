@@ -25,4 +25,9 @@ class Performance {
         Date stop = new Date()
         log.debug("${num}: ${TimeCategory.minus( stop, start )}")
     }
+
+    static String getTime(Date start) {
+        Date stop = new Date()
+        return TimeCategory.minus( stop, start )
+    }
 }
